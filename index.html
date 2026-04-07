@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobly - Find Your Next Opportunity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #0a66c2;
+        }
+        
+        * {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        .tail-container * {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .logo-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .hero-bg {
+            background: linear-gradient(90deg, rgba(10, 102, 194, 0.92), rgba(10, 102, 194, 0.85)), url('https://picsum.photos/id/1015/1920/1080') center/cover no-repeat;
+        }
+
+        .job-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .job-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .modal {
+            animation: modalPop 0.3s ease-out;
+        }
+        
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .slider {
+            position: relative;
+            overflow: hidden;
+        }
+        /* ====================== APPLICATION MODAL - EASY TO ADJUST ====================== */
+#apply-modal {
+    --modal-width: 480px;           /* ← Change this to adjust width */
+    --modal-max-height: 92vh;       /* ← Change this to adjust max height */
+    --modal-radius: 24px;           /* ← Border radius */
+    --modal-padding: 32px;          /* ← Inner padding */
+}
+
+#apply-modal .modal-box {
+    width: 100%;
+    max-width: var(--modal-width);
+    max-height: var(--modal-max-height);
+    border-radius: var(--modal-radius);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+/* Optional: Quick size presets */
+#apply-modal.small  .modal-box { --modal-width: 420px; }
+#apply-modal.medium .modal-box { --modal-width: 480px; }   /* default */
+#apply-modal.large  .modal-box { --modal-width: 560px; }
+#apply-modal.wide   .modal-box { --modal-width: 640px; }
+
+/* Make it scrollable nicely */
+#apply-modal .modal-content {
+    max-height: calc(var(--modal-max-height) - 80px);
+    overflow-y: auto;
+    padding: var(--modal-padding);
+}
+
+/* Header & Footer */
+#apply-modal .modal-header,
+#apply-modal .modal-footer {
+    padding: 32px var(--modal-padding) 20px;
+}
+
+#apply-modal .modal-footer {
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+    </style>
+</head>
+<body class="tail-container">
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-x-2">
+                <div class="w-9 h-9 bg-[#0a66c2] rounded-2xl flex items-center justify-center text-white text-2xl font-bold">J</div>
+                <h1 class="logo-font text-3xl font-semibold tracking-tight text-gray-900">Jobly</h1>
+            </div>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-x-8 text-gray-600 font-medium">
+                <a onclick="navigateTo('home')" class="hover:text-[#0a66c2] cursor-pointer flex items-center gap-x-1">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a onclick="navigateTo('jobs')" class="hover:text-[#0a66c2] cursor-pointer flex items-center gap-x-1">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Browse Jobs</span>
+                </a>
+                <a onclick="navigateTo('bookmarks')" class="hover:text-[#0a66c2] cursor-pointer flex items-center gap-x-1">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Bookmarks</span>
+                    <span id="bookmark-count" class="bg-[#0a66c2] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </a>
+                <a onclick="navigateTo('team')" class="hover:text-[#0a66c2] cursor-pointer">Team</a>
+            </div>
+
+            <div class="flex items-center gap-x-4">
+                <!-- Search -->
+                <div onclick="navigateTo('jobs')" class="hidden sm:flex items-center bg-gray-100 rounded-3xl px-4 py-2 text-sm font-medium cursor-pointer hover:bg-gray-200">
+                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                    <span class="text-gray-500">Search jobs...</span>
+                </div>
+
+                <!-- User -->
+                <div class="flex items-center gap-x-3">
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-semibold text-gray-900">Fullstack Dev</p>
+                        <p class="text-xs text-gray-500">Abuja, Nigeria</p>
+                    </div>
+                    <div class="w-9 h-9 bg-gradient-to-br from-[#0a66c2] to-blue-700 rounded-2xl flex items-center justify-center text-white font-bold shadow-inner">FD</div>
+                </div>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden text-2xl text-gray-700">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t px-6 py-4">
+            <div class="flex flex-col gap-y-4 text-gray-700 font-medium">
+                <a onclick="navigateTo('home');toggleMobileMenu()" class="flex items-center gap-x-3"><i class="fas fa-home w-5"></i> Home</a>
+                <a onclick="navigateTo('jobs');toggleMobileMenu()" class="flex items-center gap-x-3"><i class="fas fa-briefcase w-5"></i> Browse Jobs</a>
+                <a onclick="navigateTo('bookmarks');toggleMobileMenu()" class="flex items-center gap-x-3"><i class="fas fa-bookmark w-5"></i> Bookmarks <span id="bookmark-count-mobile" class="ml-auto bg-[#0a66c2] text-white text-xs rounded-full px-2">0</span></a>
+                <a onclick="navigateTo('team');toggleMobileMenu()" class="flex items-center gap-x-3"><i class="fas fa-users w-5"></i> Our Team</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO + IMAGE SLIDER -->
+    <div id="home-section" class="hero-bg text-white py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h1 class="text-5xl md:text-6xl font-bold leading-none logo-font tracking-tighter">
+                        Find your<br>next big opportunity<br>in Nigeria
+                    </h1>
+                    <p class="text-xl text-white/90 max-w-md">1,248 jobs in Abuja, Lagos &amp; Remote. Updated 2 minutes ago.</p>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="navigateTo('jobs')" 
+                                class="bg-white text-[#0a66c2] font-semibold px-8 py-4 rounded-3xl flex items-center gap-x-2 hover:shadow-xl">
+                            <i class="fas fa-search"></i>
+                            <span>Browse All Jobs</span>
+                        </button>
+                        <button onclick="navigateTo('team')" 
+                                class="border-2 border-white font-semibold px-8 py-4 rounded-3xl flex items-center gap-x-2 hover:bg-white/10">
+                            <i class="fas fa-users"></i>
+                            <span>Meet the Team</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-x-8 text-sm pt-4">
+                        <div class="flex -space-x-4">
+                            <div class="w-8 h-8 bg-white/30 backdrop-blur rounded-2xl flex items-center justify-center ring-2 ring-white text-xs">🇳🇬</div>
+                            <div class="w-8 h-8 bg-white/30 backdrop-blur rounded-2xl flex items-center justify-center ring-2 ring-white text-xs">💼</div>
+                            <div class="w-8 h-8 bg-white/30 backdrop-blur rounded-2xl flex items-center justify-center ring-2 ring-white text-xs">🚀</div>
+                        </div>
+                        <p class="text-white/80">Trusted by 12,450+ Nigerians</p>
+                    </div>
+                </div>
+
+                <!-- IMAGE SLIDER -->
+                <div class="slider rounded-3xl overflow-hidden shadow-2xl border border-white/30" style="height: 420px;">
+                    <div id="slider-container" class="flex h-full">
+                        <!-- Slides populated by JS -->
+                    </div>
+                    
+                    <!-- Slider controls -->
+                    <div class="absolute bottom-6 left-1/2 flex gap-2 z-10 -translate-x-1/2">
+                        <button onclick="prevSlide()" class="w-10 h-10 bg-white/90 hover:bg-white text-gray-900 rounded-2xl flex items-center justify-center shadow">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextSlide()" class="w-10 h-10 bg-white/90 hover:bg-white text-gray-900 rounded-2xl flex items-center justify-center shadow">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Dots -->
+                    <div id="slider-dots" class="absolute bottom-6 right-6 flex gap-2 z-10"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JOBS SECTION -->
+    <div id="jobs-section" class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex items-baseline justify-between mb-8">
+            <h2 class="text-4xl font-semibold text-gray-900">Featured Jobs</h2>
+            <div class="text-sm text-gray-500 flex items-center gap-x-1">
+                <span id="results-count">248</span> opportunities
+                <span class="text-[#0a66c2] cursor-pointer hover:underline" onclick="resetFilters()">Clear all filters</span>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            <!-- FILTERS -->
+            <div class="lg:col-span-3 bg-white border rounded-3xl p-6 h-fit sticky top-24">
+                <h3 class="font-semibold text-lg mb-6 flex items-center gap-x-2">
+                    <i class="fas fa-filter"></i> Filters
+                </h3>
+
+                <!-- Location -->
+                <div class="mb-8">
+                    <p class="text-xs uppercase tracking-widest text-gray-500 mb-3">Location</p>
+                    <div class="flex flex-wrap gap-2" id="location-filters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Job Type -->
+                <div class="mb-8">
+                    <p class="text-xs uppercase tracking-widest text-gray-500 mb-3">Job Type</p>
+                    <div class="space-y-3" id="type-filters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Salary Range -->
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-gray-500 mb-3">Monthly Salary (₦)</p>
+                    <div class="flex items-center gap-4">
+                        <input id="salary-min" type="number" placeholder="Min" 
+                               class="w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[#0a66c2]" value="300000">
+                        <span class="text-gray-400">-</span>
+                        <input id="salary-max" type="number" placeholder="Max" 
+                               class="w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[#0a66c2]" value="2500000">
+                    </div>
+                    <button onclick="applySalaryFilter()" 
+                            class="mt-4 w-full bg-gray-100 hover:bg-[#0a66c2] hover:text-white text-gray-700 font-medium py-3 rounded-3xl text-sm">
+                        Apply Salary Range
+                    </button>
+                </div>
+            </div>
+
+            <!-- JOB LISTINGS -->
+            <div class="lg:col-span-9">
+                <div id="jobs-container" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKMARKS SECTION -->
+    <div id="bookmarks-section" class="max-w-7xl mx-auto px-6 py-12 hidden">
+        <h2 class="text-4xl font-semibold text-gray-900 mb-8 flex items-center gap-x-3">
+            <i class="fas fa-bookmark text-[#0a66c2]"></i>
+            Saved Jobs
+        </h2>
+        <div id="bookmarks-container" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Populated by JS -->
+        </div>
+        <div id="no-bookmarks" class="hidden text-center py-20">
+            <i class="fas fa-bookmark text-7xl text-gray-300 mb-6"></i>
+            <p class="text-2xl font-medium text-gray-400">No bookmarks yet</p>
+            <p class="text-gray-500">Bookmark jobs you love and they’ll appear here</p>
+        </div>
+    </div>
+
+    <!-- TEAM SECTION -->
+    <div id="team-section" class="max-w-7xl mx-auto px-6 py-12 hidden bg-gray-50">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-semibold text-gray-900">Meet the Team Behind Jobly</h2>
+           
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Team members populated by JS -->
+        </div>
+    </div>
+
+    <!-- JOB DETAIL MODAL -->
+    <div id="job-modal" onclick="if(event.target === this) closeModal()" 
+         class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="modal bg-white max-w-3xl w-full rounded-3xl max-h-[92vh] overflow-auto">
+            <div class="px-8 pt-8 pb-4" id="modal-content">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+   <!-- APPLICATION MODAL - EASY TO ADJUST -->
+<div id="apply-modal" 
+     onclick="if(event.target === this) closeApplyModal()" 
+     class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4">
+
+    <div class="modal-box">
+
+        <!-- Header -->
+        <div class="modal-header border-b flex items-center justify-between">
+            <div>
+                <h3 class="text-2xl font-semibold text-gray-900" id="apply-job-title">Apply for this position</h3>
+                <p class="text-sm text-gray-500 mt-1" id="apply-company-name"></p>
+            </div>
+            <button onclick="closeApplyModal()" 
+                    class="text-4xl leading-none text-gray-400 hover:text-gray-600">×</button>
+        </div>
+
+        <!-- Form Content -->
+        <div class="modal-content">
+            <form id="application-form" onsubmit="return false;" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
+                    <input type="text" id="applicant-name" required
+                           class="w-full border border-gray-300 rounded-2xl px-5 py-4 focus:border-[#0a66c2] focus:ring-1 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
+                    <input type="email" id="applicant-email" required
+                           class="w-full border border-gray-300 rounded-2xl px-5 py-4 focus:border-[#0a66c2] focus:ring-1 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
+                    <input type="tel" id="applicant-phone" required
+                           class="w-full border border-gray-300 rounded-2xl px-5 py-4 focus:border-[#0a66c2] focus:ring-1 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Cover Letter</label>
+                    <textarea id="cover-letter" rows="5"
+                              class="w-full border border-gray-300 rounded-3xl px-5 py-4 focus:border-[#0a66c2] focus:ring-1 focus:outline-none resize-y"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Resume (PDF or DOC)</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center hover:border-[#0a66c2] hover:bg-blue-50 cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-3"></i>
+                        <p class="font-medium text-gray-700">Click to upload or drag & drop</p>
+                        <p class="text-xs text-gray-500">Max 5MB • PDF, DOC, DOCX</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer flex gap-3">
+            <button onclick="closeApplyModal()" 
+                    class="flex-1 py-4 border border-gray-300 text-gray-700 font-semibold rounded-3xl hover:bg-gray-100">
+                Cancel
+            </button>
+            <button onclick="submitApplication()" 
+                    class="flex-1 py-4 bg-[#0a66c2] text-white font-semibold rounded-3xl hover:bg-blue-700">
+                Submit Application
+            </button>
+        </div>
+
+    </div>
+</div>
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap justify-between gap-y-8">
+                <div>
+                    <div class="flex items-center gap-x-2 text-white mb-4">
+                        <div class="w-8 h-8 bg-white text-[#0a66c2] rounded-2xl flex items-center justify-center text-3xl font-bold">J</div>
+                        <h1 class="logo-font text-4xl">Jobly</h1>
+                    </div>
+                    <p class="text-gray-400 max-w-xs">Modern job portal built as a front-end project using pure HTML, Tailwind CSS &amp; Vanilla JavaScript.</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-x-12 gap-y-8">
+                    <div>
+                        <p class="font-semibold mb-4">Platform</p>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a onclick="navigateTo('jobs')" class="hover:text-white">Browse Jobs</a></li>
+                            <li><a onclick="navigateTo('bookmarks')" class="hover:text-white">Bookmarks</a></li>
+                            <li>Companies</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-4">Company</p>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li><a onclick="navigateTo('team')" class="hover:text-white">Our Team</a></li>
+                            <li>About Us</li>
+                            <li>Careers</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-4">Legal</p>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li>Privacy</li>
+                            <li>Terms</li>
+                            <li>Contact</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center text-gray-400 text-sm mt-16 pt-8 border-t border-gray-800">
+                Built  by Group 4 • April 2026
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tailwind script initialization
+        function initializeTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#0a66c2'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mock Job Data (Nigerian-focused)
+        let jobs = [
+            {
+                id: 1,
+                title: "Senior Frontend Engineer",
+                company: "Flutterwave",
+                location: "Lagos",
+                salary: 1850000,
+                type: "Full-time",
+                posted: "2h ago",
+                logo: "https://picsum.photos/id/1015/64/64",
+                description: "Build beautiful, responsive user interfaces for Africa's leading payment infrastructure. You will work on our next-gen checkout experience.",
+                requirements: ["React", "TypeScript", "Tailwind", "3+ years experience"]
+            },
+            {
+                id: 2,
+                title: "Product Designer",
+                company: "Paystack",
+                location: "Abuja",
+                salary: 950000,
+                type: "Full-time",
+                posted: "5h ago",
+                logo: "https://picsum.photos/id/201/64/64",
+                description: "Design delightful financial products used by millions of Nigerians. Join a team obsessed with great user experience.",
+                requirements: ["Figma", "User Research", "Prototyping", "Fintech experience"]
+            },
+            {
+                id: 3,
+                title: "Backend Engineer (Node.js)",
+                company: "Kuda Bank",
+                location: "Remote",
+                salary: 1200000,
+                type: "Full-time",
+                posted: "1d ago",
+                logo: "https://picsum.photos/id/301/64/64",
+                description: "Help scale Nigeria’s fastest-growing digital bank. Build secure, high-performance APIs.",
+                requirements: ["Node.js", "PostgreSQL", "AWS", "Microservices"]
+            },
+            {
+                id: 4,
+                title: "Digital Marketing Specialist",
+                company: "Jumia Nigeria",
+                location: "Lagos",
+                salary: 650000,
+                type: "Contract",
+                posted: "3d ago",
+                logo: "https://picsum.photos/id/401/64/64",
+                description: "Drive growth through performance marketing, SEO and social campaigns across Nigeria.",
+                requirements: ["Meta Ads", "Google Analytics", "Content Strategy"]
+            },
+            {
+                id: 5,
+                title: "Mobile App Developer (React Native)",
+                company: "PiggyVest",
+                location: "Abuja",
+                salary: 1100000,
+                type: "Full-time",
+                posted: "4h ago",
+                logo: "https://picsum.photos/id/501/64/64",
+                description: "Build the savings &amp; investment app trusted by 4 million+ Nigerians.",
+                requirements: ["React Native", "Expo", "Firebase", "iOS/Android"]
+            },
+            {
+                id: 6,
+                title: "Data Analyst",
+                company: "Interswitch",
+                location: "Remote",
+                salary: 780000,
+                type: "Full-time",
+                posted: "1d ago",
+                logo: "hi 3.jpg",
+                description: "Turn payment data into actionable insights for Africa’s payments giant.",
+                requirements: ["SQL", "Python", "Tableau", "Power BI"]
+            },
+            {
+                id: 7,
+                title: "UI/UX Designer",
+                company: "Andela",
+                location: "Lagos",
+                salary: 920000,
+                type: "Full-time",
+                posted: "Yesterday",
+                logo: "https://picsum.photos/id/701/64/64",
+                description: "Design the developer experience for Africa’s largest tech talent network.",
+                requirements: ["Figma", "Framer", "Design Systems"]
+            },
+            {
+                id: 8,
+                title: "DevOps Engineer",
+                company: "Termii",
+                location: "Abuja",
+                salary: 1350000,
+                type: "Full-time",
+                posted: "6h ago",
+                logo: "https://picsum.photos/id/801/64/64",
+                description: "Build and maintain scalable infrastructure for messaging and communication tools.",
+                requirements: ["AWS", "Terraform", "Docker", "Kubernetes"]
+            }
+        ]
+
+        // Mock Team Members
+        const teamMembers = [
+            {
+                name: "ABdulrafiu Quadri Ayomide",
+                role: "Lead Frontend Engineer",
+                bio: "Built the entire responsive UI with Tailwind + vanilla JS. Passionate about clean code.",
+                image: "quad.jpg",
+                Matric: "#"
+            },
+            {
+                name: "Adaora Okoro",
+                role: "UI/UX Designer",
+                bio: "Designed every pixel of this job portal. Obsessed with delightful interfaces.",
+                image: "",
+                Matric: "#"
+            },
+            {
+                name: "Chukwuma Eze",
+                role: "JavaScript Engineer",
+                bio: "Implemented filtering, bookmarks, modals &amp; image slider logic.",
+                image: "",
+                Matric: "#"
+            },
+            {
+                name: "Fatima Yusuf",
+                role: "Frontend Developer",
+                bio: "Made it fully responsive and mobile-first. Loves Tailwind magic.",
+                image: "",
+                Matric: "#"
+            }
+        ]
+
+        // Slider images & text
+        let slides = [
+            {
+                image: "https://picsum.photos/id/1015/1200/800",
+                title: "Senior Frontend Engineer",
+                subtitle: "Flutterwave • Lagos • ₦1.85M"
+            },
+            {
+                image: "https://picsum.photos/id/201/1200/800",
+                title: "Product Designer",
+                subtitle: "Paystack • Abuja • ₦950K"
+            },
+            {
+                image: "https://picsum.photos/id/301/1200/800",
+                title: "Backend Engineer",
+                subtitle: "Kuda Bank • Remote • ₦1.2M"
+            },
+            {
+                image: "https://picsum.photos/id/501/1200/800",
+                title: "React Native Developer",
+                subtitle: "PiggyVest • Abuja • ₦1.1M"
+            }
+        ]
+
+        let currentSlide = 0
+        let bookmarks = JSON.parse(localStorage.getItem('joblyBookmarks')) || []
+
+        // Render slider
+        function renderSlider() {
+            const container = document.getElementById('slider-container')
+            container.innerHTML = slides.map((slide, index) => `
+                <div class="flex-shrink-0 w-full h-full relative" style="display: ${index === 0 ? 'block' : 'none'}">
+                    <img src="${slide.image}" alt="" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-8 text-white">
+                        <p class="text-[#0a66c2] text-sm font-semibold mb-1">FEATURED JOB</p>
+                        <h3 class="text-3xl font-semibold">${slide.title}</h3>
+                        <p class="text-lg">${slide.subtitle}</p>
+                    </div>
+                </div>
+            `).join('')
+
+            // Render dots
+            const dotsContainer = document.getElementById('slider-dots')
+            dotsContainer.innerHTML = slides.map((_, i) => `
+                <button onclick="goToSlide(${i})" 
+                        class="w-3 h-3 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/40'}"></button>
+            `).join('')
+        }
+
+        function showSlide(n) {
+            const allSlides = document.querySelectorAll('#slider-container > div')
+            allSlides.forEach((slide, index) => {
+                slide.style.display = index === n ? 'block' : 'none'
+            })
+            
+            // Update dots
+            const dots = document.querySelectorAll('#slider-dots button')
+            dots.forEach((dot, index) => {
+                dot.className = `w-3 h-3 rounded-full ${index === n ? 'bg-white' : 'bg-white/40'}`
+            })
+            currentSlide = n
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length
+            showSlide(currentSlide)
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length
+            showSlide(currentSlide)
+        }
+
+        function goToSlide(n) {
+            currentSlide = n
+            showSlide(n)
+        }
+
+        // Auto-slide every 5 seconds
+        let slideInterval
+        function startAutoSlide() {
+            slideInterval = setInterval(() => {
+                nextSlide()
+            }, 5000)
+        }
+
+        // Render location filter chips
+        function renderLocationFilters() {
+            const locations = ['Abuja', 'Lagos', 'Remote', 'Port Harcourt']
+            const container = document.getElementById('location-filters')
+            container.innerHTML = locations.map(loc => `
+                <div onclick="toggleLocationFilter(this)" 
+                     data-location="${loc}"
+                     class="location-chip inline-flex items-center px-5 py-2 bg-gray-100 hover:bg-gray-200 rounded-3xl text-sm font-medium cursor-pointer">
+                    ${loc}
+                </div>
+            `).join('')
+        }
+
+        let activeLocations = []
+
+        function toggleLocationFilter(el) {
+            const loc = el.dataset.location
+            if (activeLocations.includes(loc)) {
+                activeLocations = activeLocations.filter(l => l !== loc)
+                el.classList.remove('bg-[#0a66c2]', 'text-white')
+                el.classList.add('bg-gray-100')
+            } else {
+                activeLocations.push(loc)
+                el.classList.add('bg-[#0a66c2]', 'text-white')
+                el.classList.remove('bg-gray-100')
+            }
+            renderJobs()
+        }
+
+        // Render job type filters
+        function renderTypeFilters() {
+            const types = ['Full-time', 'Contract', 'Remote', 'Part-time']
+            const container = document.getElementById('type-filters')
+            container.innerHTML = types.map(type => `
+                <label class="flex items-center gap-x-2 cursor-pointer">
+                    <input type="checkbox" value="${type}" class="w-4 h-4 accent-[#0a66c2]" onchange="renderJobs()">
+                    <span class="text-gray-700">${type}</span>
+                </label>
+            `).join('')
+        }
+
+        // Render all jobs
+        function renderJobs(filteredJobs = jobs) {
+            const container = document.getElementById('jobs-container')
+            container.innerHTML = filteredJobs.map(job => `
+                <div class="job-card bg-white border rounded-3xl overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-x-3">
+                                <img src="${job.logo}" alt="" class="w-12 h-12 rounded-2xl object-cover">
+                                <div>
+                                    <p class="font-semibold">${job.company}</p>
+                                    <p class="text-xs text-gray-500">${job.posted}</p>
+                                </div>
+                            </div>
+                            <button onclick="toggleBookmark(${job.id}); event.stopImmediatePropagation()" 
+                                    class="text-2xl ${bookmarks.includes(job.id) ? 'text-red-500' : 'text-gray-300 hover:text-gray-400'}">
+                                <i class="${bookmarks.includes(job.id) ? 'fas' : 'far'} fa-heart"></i>
+                            </button>
+                        </div>
+                        
+                        <h4 onclick="showJobDetail(${job.id})" class="text-xl font-semibold mt-5 leading-tight cursor-pointer">${job.title}</h4>
+                        
+                        <div class="flex items-center gap-x-2 mt-4">
+                            <span class="px-4 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-3xl">${job.type}</span>
+                            <span class="px-4 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-3xl">${job.location}</span>
+                        </div>
+                        
+                        <p class="mt-4 font-semibold text-[#0a66c2]">₦${job.salary.toLocaleString('en-NG')}</p>
+                    </div>
+                    
+                    <div class="border-t px-6 py-4 flex justify-between items-center text-sm">
+                        <button onclick="showJobDetail(${job.id}); event.stopImmediatePropagation()" 
+                                class="font-medium text-[#0a66c2] flex items-center">
+                            View details 
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                        <button onclick="applyForJob(${job.id}); event.stopImmediatePropagation()" 
+                                class="bg-[#0a66c2] text-white px-6 py-2 rounded-3xl text-sm font-medium">Apply now</button>
+                    </div>
+                </div>
+            `).join('')
+
+            document.getElementById('results-count').textContent = filteredJobs.length
+        }
+
+        // Filter jobs
+        function filterJobs() {
+            let filtered = jobs
+
+            // Location filter
+            if (activeLocations.length > 0) {
+                filtered = filtered.filter(job => activeLocations.includes(job.location))
+            }
+
+            // Type filter
+            const checkedTypes = Array.from(document.querySelectorAll('#type-filters input:checked')).map(el => el.value)
+            if (checkedTypes.length > 0) {
+                filtered = filtered.filter(job => checkedTypes.includes(job.type))
+            }
+
+            // Salary filter
+            const minSalary = parseInt(document.getElementById('salary-min').value) || 0
+            const maxSalary = parseInt(document.getElementById('salary-max').value) || Infinity
+            filtered = filtered.filter(job => job.salary >= minSalary && job.salary <= maxSalary)
+
+            renderJobs(filtered)
+        }
+
+        function applySalaryFilter() {
+            filterJobs()
+        }
+
+        // Show single job detail
+        function showJobDetail(id) {
+            const job = jobs.find(j => j.id === id)
+            if (!job) return
+
+            const modalContent = document.getElementById('modal-content')
+            modalContent.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-x-4">
+                        <img src="${job.logo}" class="w-14 h-14 rounded-2xl">
+                        <div>
+                            <h2 class="text-3xl font-semibold">${job.title}</h2>
+                            <p class="text-xl text-gray-600">${job.company}</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal()" class="text-4xl text-gray-300 hover:text-gray-500">×</button>
+                </div>
+                
+                <div class="mt-8 grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-gray-50 rounded-2xl py-4">
+                        <p class="text-xs text-gray-500">LOCATION</p>
+                        <p class="font-semibold">${job.location}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl py-4">
+                        <p class="text-xs text-gray-500">SALARY</p>
+                        <p class="font-semibold">₦${job.salary.toLocaleString('en-NG')}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl py-4">
+                        <p class="text-xs text-gray-500">TYPE</p>
+                        <p class="font-semibold">${job.type}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h4 class="font-semibold mb-2">About the role</h4>
+                    <p class="text-gray-600 leading-relaxed">${job.description}</p>
+                </div>
+                
+                <div class="mt-8">
+                    <h4 class="font-semibold mb-2">Requirements</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                        ${job.requirements.map(req => `<li>${req}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="flex gap-3 mt-10">
+                    <button onclick="toggleBookmark(${job.id}); closeModal()" 
+                            class="flex-1 border border-gray-300 font-medium py-4 rounded-3xl flex items-center justify-center gap-x-2">
+                        <i class="${bookmarks.includes(job.id) ? 'fas' : 'far'} fa-heart"></i>
+                        ${bookmarks.includes(job.id) ? 'Remove bookmark' : 'Bookmark this job'}
+                    </button>
+                    <button onclick="applyForJob(${job.id}); closeModal()" 
+                            class="flex-1 bg-[#0a66c2] text-white font-semibold py-4 rounded-3xl">Apply Now</button>
+                </div>
+            `
+            document.getElementById('job-modal').classList.remove('hidden')
+            document.getElementById('job-modal').classList.add('flex')
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('job-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        // Apply for job
+        function applyForJob(id) {
+            const job = jobs.find(j => j.id === id)
+            if (!job) return
+            document.getElementById('apply-job-title').textContent = `Apply for ${job.title}`
+            document.getElementById('apply-modal').classList.remove('hidden')
+            document.getElementById('apply-modal').classList.add('flex')
+        }
+
+        function closeApplyModal() {
+            const modal = document.getElementById('apply-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function handleApplication(e) {
+            e.preventDefault()
+            closeApplyModal()
+            
+            // Fake success
+            const successHTML = `
+                <div class="text-center py-12">
+                    <i class="fas fa-check-circle text-7xl text-emerald-500 mb-6"></i>
+                    <h3 class="text-3xl font-semibold">Application submitted!</h3>
+                    <p class="text-gray-500 mt-3">Thank you. The recruiter will get back to you soon.</p>
+                    <button onclick="closeModal()" class="mt-8 px-8 py-4 bg-[#0a66c2] text-white rounded-3xl">Back to jobs</button>
+                </div>
+            `
+            document.getElementById('modal-content').innerHTML = successHTML
+            document.getElementById('job-modal').classList.remove('hidden')
+            document.getElementById('job-modal').classList.add('flex')
+            
+            // Reset form
+            document.getElementById('application-form').reset()
+        }
+
+        // Bookmark system
+        function toggleBookmark(id) {
+            if (bookmarks.includes(id)) {
+                bookmarks = bookmarks.filter(b => b !== id)
+            } else {
+                bookmarks.push(id)
+            }
+            localStorage.setItem('joblyBookmarks', JSON.stringify(bookmarks))
+            updateBookmarkCount()
+            renderJobs() // refresh current view
+            if (!document.getElementById('bookmarks-section').classList.contains('hidden')) {
+                renderBookmarks()
+            }
+        }
+
+        function updateBookmarkCount() {
+            document.getElementById('bookmark-count').textContent = bookmarks.length
+            const mobileCount = document.getElementById('bookmark-count-mobile')
+            if (mobileCount) mobileCount.textContent = bookmarks.length
+        }
+
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-container')
+            const noBookmarks = document.getElementById('no-bookmarks')
+            
+            const bookmarkedJobs = jobs.filter(j => bookmarks.includes(j.id))
+            
+            if (bookmarkedJobs.length === 0) {
+                container.innerHTML = ''
+                noBookmarks.classList.remove('hidden')
+                return
+            }
+            
+            noBookmarks.classList.add('hidden')
+            container.innerHTML = bookmarkedJobs.map(job => `
+                <div class="job-card bg-white border rounded-3xl overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-x-3">
+                                <img src="${job.logo}" alt="" class="w-12 h-12 rounded-2xl">
+                                <div>
+                                    <p class="font-semibold">${job.company}</p>
+                                </div>
+                            </div>
+                            <button onclick="toggleBookmark(${job.id}); renderBookmarks()" class="text-2xl text-red-500">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <h4 onclick="showJobDetail(${job.id})" class="text-xl font-semibold mt-5 leading-tight cursor-pointer">${job.title}</h4>
+                        <div class="flex gap-x-2 mt-4">
+                            <span class="px-4 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-3xl">${job.type}</span>
+                            <span class="px-4 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-3xl">${job.location}</span>
+                        </div>
+                        <p class="mt-4 font-semibold text-[#0a66c2]">₦${job.salary.toLocaleString('en-NG')}</p>
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        // Render team
+        function renderTeam() {
+            const container = document.querySelector('#team-section > div:last-child')
+            container.innerHTML = teamMembers.map(member => `
+                <div class="bg-white rounded-3xl p-6 shadow-sm text-center">
+                    <img src="${member.image}" alt="${member.name}" 
+                         class="w-28 h-28 mx-auto rounded-3xl object-cover mb-6">
+                    <h4 class="font-semibold text-xl">${member.name}</h4>
+                    <p class="text-[#0a66c2] text-sm">${member.role}</p>
+                    <p class="text-gray-600 text-sm mt-4 leading-relaxed">${member.bio}</p>
+                    <div class="mt-6 flex justify-center">
+                        <a href="${member.linkedin}" class="flex items-center gap-x-1 text-gray-400 hover:text-[#0a66c2]">
+                            <i class="fab fa-linkedin"></i>
+                            <span class="text-xs">LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        // Navigation between sections
+        function navigateTo(section) {
+            // Hide all sections
+            document.getElementById('home-section').classList.add('hidden')
+            document.getElementById('jobs-section').classList.add('hidden')
+            document.getElementById('bookmarks-section').classList.add('hidden')
+            document.getElementById('team-section').classList.add('hidden')
+            
+            // Show the requested one
+            if (section === 'home') {
+                document.getElementById('home-section').classList.remove('hidden')
+            } else if (section === 'jobs') {
+                document.getElementById('jobs-section').classList.remove('hidden')
+                renderJobs()
+            } else if (section === 'bookmarks') {
+                document.getElementById('bookmarks-section').classList.remove('hidden')
+                renderBookmarks()
+            } else if (section === 'team') {
+                document.getElementById('team-section').classList.remove('hidden')
+            }
+            
+            // Close mobile menu if open
+            if (document.getElementById('mobile-menu').classList.contains('flex')) {
+                toggleMobileMenu()
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu')
+            menu.classList.toggle('hidden')
+            menu.classList.toggle('flex')
+        }
+
+        function resetFilters() {
+            activeLocations = []
+            document.querySelectorAll('#type-filters input').forEach(cb => cb.checked = false)
+            document.getElementById('salary-min').value = 300000
+            document.getElementById('salary-max').value = 2500000
+            renderLocationFilters()
+            renderJobs()
+        }
+
+        // Main initialization
+        function init() {
+            initializeTailwind()
+            renderSlider()
+            startAutoSlide()
+            renderLocationFilters()
+            renderTypeFilters()
+            renderJobs()
+            renderTeam()
+            updateBookmarkCount()
+            
+            // Keyboard support for slider
+            document.addEventListener('keydown', (e) => {
+                if (document.getElementById('home-section').classList.contains('hidden')) return
+                if (e.key === 'ArrowRight') nextSlide()
+                if (e.key === 'ArrowLeft') prevSlide()
+            })
+            
+            console.log('%c✅ Jobly front-end ready! All features working: job listing, filters, details, application form, bookmarks, image slider & team page.', 'color:#0a66c2; font-family:monospace; font-size:13px')
+        }
+
+        // Start everything
+        window.onload = init
+    </script>
+</body>
+</html>
